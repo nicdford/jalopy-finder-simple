@@ -253,8 +253,54 @@ body {
     color: #2d3748;
 }
 
+.vehicle-table {
+    width: 100%;
+    margin-top: 15px;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.vehicle-table thead {
+    background: #667eea;
+    color: white;
+}
+
+.vehicle-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.vehicle-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+    color: #2d3748;
+}
+
+.vehicle-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.vehicle-table tbody tr:hover {
+    background: #f7fafc;
+}
+
 @media (max-width: 768px) {
     .container {
         grid-template-columns: 1fr;
+    }
+
+    .vehicle-table {
+        font-size: 12px;
+    }
+
+    .vehicle-table th,
+    .vehicle-table td {
+        padding: 8px;
     }
 }

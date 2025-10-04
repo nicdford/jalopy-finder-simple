@@ -85,22 +85,44 @@ async function searchInventory(make, model, yardIds) {
 
     for (const yardId of yardIds) {
         try {
-            const models = await fetchModels(make, yardId);
-            const hasModel = models.some(m => m.model === model);
+            const vehicles = await fetchVehicles(make, model, yardId);
             const yardName = yardNames[yardId] || `Yard ${yardId}`;
 
             const resultDiv = document.createElement('div');
-            resultDiv.className = `result-item ${hasModel ? 'available' : 'unavailable'}`;
+            resultDiv.className = `result-item ${vehicles.length > 0 ? 'available' : 'unavailable'}`;
+
+            let tableHTML = '';
+            if (vehicles.length > 0) {
+                tableHTML = `
+                    <table class="vehicle-table">
+                        <thead>
+                            <tr>
+                                <th>Year</th>
+                                <th>Make</th>
+                                <th>Model</th>
+                                <th>Row</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${vehicles.map(v => `
+                                <tr>
+                                    <td>${v.year}</td>
+                                    <td>${v.make}</td>
+                                    <td>${v.model}</td>
+                                    <td>${v.row}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
 
             resultDiv.innerHTML = `
                 <h3>${yardName}</h3>
-                <span class="status ${hasModel ? 'available' : 'unavailable'}">
-                    ${hasModel ? '✓ Available' : '✗ Not Available'}
+                <span class="status ${vehicles.length > 0 ? 'available' : 'unavailable'}">
+                    ${vehicles.length > 0 ? `✓ ${vehicles.length} vehicle(s) found` : '✗ Not Available'}
                 </span>
-                <div class="models-list">
-                    <strong>${make} models at this yard:</strong><br>
-                    ${models.length > 0 ? models.map(m => m.model).join(', ') : 'None'}
-                </div>
+                ${tableHTML}
             `;
 
             resultsContainer.appendChild(resultDiv);
@@ -119,10 +141,10 @@ async function searchInventory(make, model, yardIds) {
     }
 }
 
-async function fetchModels(makeName, yardId) {
-    // Using CORS proxy for GitHub Pages
-    const targetUrl = 'https://inventory.pickapartjalopyjungle.com/Home/GetModels';
-    const formData = `makeName=${encodeURIComponent(makeName)}&yardId=${encodeURIComponent(yardId)}`;
+async function fetchVehicles(make, model, yardId) {
+    // Fetch the inventory page with form submission
+    const targetUrl = 'https://inventory.pickapartjalopyjungle.com/';
+    const formData = `YardId=${encodeURIComponent(yardId)}&VehicleMake=${encodeURIComponent(make)}&VehicleModel=${encodeURIComponent(model)}`;
 
     // Use corsproxy.io which supports POST requests
     const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
@@ -139,5 +161,32 @@ async function fetchModels(makeName, yardId) {
         throw new Error(`Failed to fetch data for yard ${yardId}`);
     }
 
-    return await response.json();
+    const html = await response.text();
+
+    // Parse the HTML to extract vehicle data from the table
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const table = doc.querySelector('table.table');
+
+    if (!table) {
+        return [];
+    }
+
+    const vehicles = [];
+    const rows = table.querySelectorAll('tr');
+
+    // Skip the header row (first row)
+    for (let i = 1; i < rows.length; i++) {
+        const cells = rows[i].querySelectorAll('td');
+        if (cells.length === 4) {
+            vehicles.push({
+                year: cells[0].textContent.trim(),
+                make: cells[1].textContent.trim(),
+                model: cells[2].textContent.trim(),
+                row: cells[3].textContent.trim()
+            });
+        }
+    }
+
+    return vehicles;
 }
