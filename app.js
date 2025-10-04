@@ -75,17 +75,25 @@ document.getElementById('search-btn').addEventListener('click', async () => {
 
 async function searchInventory(make, model, yardIds) {
     const resultsContainer = document.getElementById('results');
+    const yardNames = {
+        '1020': 'BOISE',
+        '1021': 'CALDWELL',
+        '1119': 'GARDEN CITY',
+        '1022': 'NAMPA',
+        '1099': 'TWIN FALLS'
+    };
 
     for (const yardId of yardIds) {
         try {
             const models = await fetchModels(make, yardId);
             const hasModel = models.some(m => m.model === model);
+            const yardName = yardNames[yardId] || `Yard ${yardId}`;
 
             const resultDiv = document.createElement('div');
             resultDiv.className = `result-item ${hasModel ? 'available' : 'unavailable'}`;
 
             resultDiv.innerHTML = `
-                <h3>Yard ${yardId}</h3>
+                <h3>${yardName}</h3>
                 <span class="status ${hasModel ? 'available' : 'unavailable'}">
                     ${hasModel ? '✓ Available' : '✗ Not Available'}
                 </span>
@@ -98,10 +106,11 @@ async function searchInventory(make, model, yardIds) {
             resultsContainer.appendChild(resultDiv);
 
         } catch (error) {
+            const yardName = yardNames[yardId] || `Yard ${yardId}`;
             const resultDiv = document.createElement('div');
             resultDiv.className = 'result-item unavailable';
             resultDiv.innerHTML = `
-                <h3>Yard ${yardId}</h3>
+                <h3>${yardName}</h3>
                 <span class="status unavailable">Error</span>
                 <div class="models-list">Error: ${error.message}</div>
             `;
