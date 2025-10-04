@@ -1,6 +1,8 @@
 // Authentication
-const HARDCODED_USERNAME = 'nicdford';
-const HARDCODED_PASSWORD = 'redwed4';
+const VALID_USERS = {
+    'nicdford': 'redwed4',
+    'apexidaho': 'keepcarsclean'
+};
 
 // Check if already logged in
 window.addEventListener('DOMContentLoaded', () => {
@@ -18,7 +20,7 @@ document.getElementById('login-form').addEventListener('submit', (e) => {
     const password = document.getElementById('password').value;
     const errorElement = document.getElementById('login-error');
 
-    if (username === HARDCODED_USERNAME && password === HARDCODED_PASSWORD) {
+    if (VALID_USERS[username] && VALID_USERS[username] === password) {
         sessionStorage.setItem('isLoggedIn', 'true');
         showAppScreen();
         errorElement.textContent = '';
