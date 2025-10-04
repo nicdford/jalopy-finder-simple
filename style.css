@@ -125,7 +125,7 @@ body {
 
 .preset-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
     margin-bottom: 20px;
 }
@@ -371,6 +371,12 @@ body {
 
 .vehicle-table tbody tr:hover {
     background: #f7fafc;
+}
+
+@media (max-width: 1024px) {
+    .preset-cards {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 768px) {

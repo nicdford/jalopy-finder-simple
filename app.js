@@ -76,20 +76,14 @@ document.querySelectorAll('.preset-card').forEach(card => {
         document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
         this.classList.add('active');
 
-        // Get selected yards
-        const selectedYards = Array.from(document.querySelectorAll('.yard-checkbox:checked'))
-            .map(cb => cb.value);
-
-        if (selectedYards.length === 0) {
-            alert('Please select at least one yard');
-            return;
-        }
+        // Quick search always checks all yards
+        const allYards = ['1020', '1021', '1119', '1022', '1099'];
 
         // Show loading
         document.getElementById('loading').style.display = 'block';
         document.getElementById('results').innerHTML = '';
 
-        await searchInventoryPreset(preset.make, preset.models, selectedYards);
+        await searchInventoryPreset(preset.make, preset.models, allYards);
 
         // Hide loading
         document.getElementById('loading').style.display = 'none';
