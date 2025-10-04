@@ -45,14 +45,73 @@ function showAppScreen() {
     document.getElementById('app-screen').classList.add('active');
 }
 
+// Preset configurations
+const PRESETS = {
+    'super_duty': {
+        make: 'FORD',
+        models: ['F250', 'F-250', 'F350', 'F-350', 'EXCURSION']
+    },
+    'ford_trucks': {
+        make: 'FORD',
+        models: ['F150', 'F-150', 'F250', 'F-250', 'F350', 'F-350']
+    },
+    'chevy_trucks': {
+        make: 'CHEVROLET',
+        models: ['SILVERADO 1500', 'SILVERADO 2500', 'SILVERADO 3500']
+    },
+    'dodge_trucks': {
+        make: 'DODGE',
+        models: ['RAM 1500', 'RAM 2500', 'RAM 3500']
+    }
+};
+
 // Normalize model name for matching (removes spaces, dashes, special chars)
 function normalizeModel(model) {
     return model.toUpperCase().replace(/[\s\-]/g, '');
 }
 
+// Preset dropdown change handler
+document.getElementById('preset').addEventListener('change', async function() {
+    const presetKey = this.value;
+
+    if (!presetKey) {
+        // Enable manual search
+        document.getElementById('make').disabled = false;
+        document.getElementById('model').disabled = false;
+        return;
+    }
+
+    const preset = PRESETS[presetKey];
+
+    // Disable manual dropdowns when preset is selected
+    document.getElementById('make').disabled = true;
+    document.getElementById('model').disabled = true;
+
+    // Trigger search with preset values
+    const selectedYards = Array.from(document.querySelectorAll('.yard-checkbox:checked'))
+        .map(cb => cb.value);
+
+    if (selectedYards.length === 0) {
+        alert('Please select at least one yard');
+        return;
+    }
+
+    // Show loading
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('results').innerHTML = '';
+
+    await searchInventoryPreset(preset.make, preset.models, selectedYards);
+
+    // Hide loading
+    document.getElementById('loading').style.display = 'none';
+});
+
 // Make dropdown change handler - load models for selected make
 document.getElementById('make').addEventListener('change', async function() {
     const make = this.value;
+
+    // Clear preset when user manually selects make
+    document.getElementById('preset').value = '';
     const modelSelect = document.getElementById('model');
 
     // Reset model dropdown
@@ -136,6 +195,88 @@ document.getElementById('search-btn').addEventListener('click', async () => {
     // Hide loading
     document.getElementById('loading').style.display = 'none';
 });
+
+// Search inventory for preset (multiple models)
+async function searchInventoryPreset(make, models, yardIds) {
+    const resultsContainer = document.getElementById('results');
+    const yardNames = {
+        '1020': 'BOISE',
+        '1021': 'CALDWELL',
+        '1119': 'GARDEN CITY',
+        '1022': 'NAMPA',
+        '1099': 'TWIN FALLS'
+    };
+
+    for (const yardId of yardIds) {
+        try {
+            // Fetch vehicles for all models in the preset
+            let allVehicles = [];
+            for (const model of models) {
+                const vehicles = await fetchVehicles(make, model, yardId);
+                allVehicles = allVehicles.concat(vehicles);
+            }
+
+            // Remove duplicates based on year, make, model, and row
+            const uniqueVehicles = allVehicles.filter((v, index, self) =>
+                index === self.findIndex((t) => (
+                    t.year === v.year && t.make === v.make && t.model === v.model && t.row === v.row
+                ))
+            );
+
+            const yardName = yardNames[yardId] || `Yard ${yardId}`;
+
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result-item ${uniqueVehicles.length > 0 ? 'available' : 'unavailable'}`;
+
+            let tableHTML = '';
+            if (uniqueVehicles.length > 0) {
+                tableHTML = `
+                    <table class="vehicle-table">
+                        <thead>
+                            <tr>
+                                <th>Year</th>
+                                <th>Make</th>
+                                <th>Model</th>
+                                <th>Row</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${uniqueVehicles.map(v => `
+                                <tr>
+                                    <td>${v.year}</td>
+                                    <td>${v.make}</td>
+                                    <td>${v.model}</td>
+                                    <td>${v.row}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            resultDiv.innerHTML = `
+                <h3>${yardName}</h3>
+                <span class="status ${uniqueVehicles.length > 0 ? 'available' : 'unavailable'}">
+                    ${uniqueVehicles.length > 0 ? `✓ ${uniqueVehicles.length} vehicle(s) found` : '✗ Not Available'}
+                </span>
+                ${tableHTML}
+            `;
+
+            resultsContainer.appendChild(resultDiv);
+
+        } catch (error) {
+            const yardName = yardNames[yardId] || `Yard ${yardId}`;
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'result-item unavailable';
+            resultDiv.innerHTML = `
+                <h3>${yardName}</h3>
+                <span class="status unavailable">Error</span>
+                <div class="models-list">Error: ${error.message}</div>
+            `;
+            resultsContainer.appendChild(resultDiv);
+        }
+    }
+}
 
 async function searchInventory(make, model, yardIds) {
     const resultsContainer = document.getElementById('results');

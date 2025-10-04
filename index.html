@@ -33,6 +33,21 @@
                 <h2>Search Inventory</h2>
 
                 <div class="form-group">
+                    <label for="preset">Quick Presets:</label>
+                    <select class="form-control" id="preset">
+                        <option value="">Select a preset or search manually</option>
+                        <option value="super_duty">FORD SUPER DUTY (F250, F350, Excursion)</option>
+                        <option value="ford_trucks">FORD TRUCKS (F150, F250, F350)</option>
+                        <option value="chevy_trucks">CHEVY TRUCKS (Silverado 1500, 2500, 3500)</option>
+                        <option value="dodge_trucks">DODGE TRUCKS (Ram 1500, 2500, 3500)</option>
+                    </select>
+                </div>
+
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+
+                <div class="form-group">
                     <label for="make">Make:</label>
                     <select class="form-control" id="make" name="VehicleMake">
                         <option value="">Select Make</option>
@@ -94,7 +109,7 @@
                         <label><input type="checkbox" class="yard-checkbox" value="1021" checked> CALDWELL</label>
                         <label><input type="checkbox" class="yard-checkbox" value="1119" checked> GARDEN CITY</label>
                         <label><input type="checkbox" class="yard-checkbox" value="1022" checked> NAMPA</label>
-                        <label><input type="checkbox" class="yard-checkbox" value="1099" checked> TWIN FALLS</label>
+                        <label><input type="checkbox" class="yard-checkbox" value="1099"> TWIN FALLS</label>
                     </div>
                 </div>
 
