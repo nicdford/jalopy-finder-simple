@@ -16,7 +16,7 @@ window.addEventListener('DOMContentLoaded', () => {
 document.getElementById('login-form').addEventListener('submit', (e) => {
     e.preventDefault();
 
-    const username = document.getElementById('username').value;
+    const username = document.getElementById('username').value.toLowerCase();
     const password = document.getElementById('password').value;
     const errorElement = document.getElementById('login-error');
 
