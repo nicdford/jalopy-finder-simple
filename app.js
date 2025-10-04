@@ -85,6 +85,9 @@ document.querySelectorAll('.preset-card').forEach(card => {
         document.getElementById('loading').style.display = 'block';
         document.getElementById('results').innerHTML = '';
 
+        // Scroll to results
+        document.querySelector('.results-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
         await searchInventoryPreset(preset.make, preset.models, allYards);
 
         // Hide loading
