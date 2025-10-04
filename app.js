@@ -50,13 +50,72 @@ function normalizeModel(model) {
     return model.toUpperCase().replace(/[\s\-]/g, '');
 }
 
+// Make dropdown change handler - load models for selected make
+document.getElementById('make').addEventListener('change', async function() {
+    const make = this.value;
+    const modelSelect = document.getElementById('model');
+
+    // Reset model dropdown
+    modelSelect.innerHTML = '<option value="">Loading...</option>';
+    modelSelect.disabled = true;
+
+    if (!make) {
+        modelSelect.innerHTML = '<option value="">Select a make first</option>';
+        return;
+    }
+
+    try {
+        // Get models from any yard (using first available yard)
+        const yardId = '1022'; // Default to NAMPA
+        const models = await fetchModelsForMake(make, yardId);
+
+        modelSelect.innerHTML = '<option value="">Select Model</option>';
+
+        // Get unique models across all yards
+        const uniqueModels = [...new Set(models.map(m => m.model))].sort();
+
+        uniqueModels.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model;
+            option.textContent = model;
+            modelSelect.appendChild(option);
+        });
+
+        modelSelect.disabled = false;
+    } catch (error) {
+        modelSelect.innerHTML = '<option value="">Error loading models</option>';
+        console.error('Error loading models:', error);
+    }
+});
+
+// Helper function to fetch models for a make
+async function fetchModelsForMake(make, yardId) {
+    const targetUrl = 'https://inventory.pickapartjalopyjungle.com/Home/GetModels';
+    const formData = `makeName=${encodeURIComponent(make)}&yardId=${encodeURIComponent(yardId)}`;
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+
+    const response = await fetch(proxyUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch models');
+    }
+
+    return await response.json();
+}
+
 // Search functionality
 document.getElementById('search-btn').addEventListener('click', async () => {
-    const make = document.getElementById('make').value.trim().toUpperCase();
-    const model = document.getElementById('model').value.trim().toUpperCase();
+    const make = document.getElementById('make').value.trim();
+    const model = document.getElementById('model').value.trim();
 
     if (!make || !model) {
-        alert('Please enter both make and model');
+        alert('Please select both make and model');
         return;
     }
 

@@ -147,12 +147,21 @@ body {
     font-weight: 500;
 }
 
-.form-group input[type="text"] {
+.form-group input[type="text"],
+.form-group select.form-control {
     width: 100%;
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
     font-size: 14px;
+    background: white;
+    cursor: pointer;
+}
+
+.form-group select.form-control:disabled {
+    background: #f7fafc;
+    cursor: not-allowed;
+    color: #999;
 }
 
 .checkbox-group {
