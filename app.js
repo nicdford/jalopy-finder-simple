@@ -45,6 +45,11 @@ function showAppScreen() {
     document.getElementById('app-screen').classList.add('active');
 }
 
+// Normalize model name for matching (removes spaces, dashes, special chars)
+function normalizeModel(model) {
+    return model.toUpperCase().replace(/[\s\-]/g, '');
+}
+
 // Search functionality
 document.getElementById('search-btn').addEventListener('click', async () => {
     const make = document.getElementById('make').value.trim().toUpperCase();
@@ -142,11 +147,10 @@ async function searchInventory(make, model, yardIds) {
 }
 
 async function fetchVehicles(make, model, yardId) {
-    // Fetch the inventory page with form submission
-    const targetUrl = 'https://inventory.pickapartjalopyjungle.com/';
-    const formData = `YardId=${encodeURIComponent(yardId)}&VehicleMake=${encodeURIComponent(make)}&VehicleModel=${encodeURIComponent(model)}`;
+    // First, get all available models for this make at this yard
+    const targetUrl = 'https://inventory.pickapartjalopyjungle.com/Home/GetModels';
+    const formData = `makeName=${encodeURIComponent(make)}&yardId=${encodeURIComponent(yardId)}`;
 
-    // Use corsproxy.io which supports POST requests
     const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
 
     const response = await fetch(proxyUrl, {
@@ -158,35 +162,70 @@ async function fetchVehicles(make, model, yardId) {
     });
 
     if (!response.ok) {
-        throw new Error(`Failed to fetch data for yard ${yardId}`);
+        throw new Error(`Failed to fetch models for yard ${yardId}`);
     }
 
-    const html = await response.text();
+    const models = await response.json();
 
-    // Parse the HTML to extract vehicle data from the table
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    const table = doc.querySelector('table.table');
+    // Find matching models using normalized comparison
+    const normalizedSearchModel = normalizeModel(model);
+    const matchingModels = models.filter(m => {
+        const normalizedModel = normalizeModel(m.model);
+        return normalizedModel.includes(normalizedSearchModel) ||
+               normalizedSearchModel.includes(normalizedModel);
+    });
 
-    if (!table) {
+    if (matchingModels.length === 0) {
         return [];
     }
 
-    const vehicles = [];
-    const rows = table.querySelectorAll('tr');
+    // Fetch vehicles for each matching model variant
+    const allVehicles = [];
 
-    // Skip the header row (first row)
-    for (let i = 1; i < rows.length; i++) {
-        const cells = rows[i].querySelectorAll('td');
-        if (cells.length === 4) {
-            vehicles.push({
-                year: cells[0].textContent.trim(),
-                make: cells[1].textContent.trim(),
-                model: cells[2].textContent.trim(),
-                row: cells[3].textContent.trim()
-            });
+    for (const matchedModel of matchingModels) {
+        const inventoryUrl = 'https://inventory.pickapartjalopyjungle.com/';
+        const inventoryFormData = `YardId=${encodeURIComponent(yardId)}&VehicleMake=${encodeURIComponent(make)}&VehicleModel=${encodeURIComponent(matchedModel.model)}`;
+
+        const inventoryProxyUrl = `https://corsproxy.io/?${encodeURIComponent(inventoryUrl)}`;
+
+        const inventoryResponse = await fetch(inventoryProxyUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: inventoryFormData
+        });
+
+        if (!inventoryResponse.ok) {
+            continue;
+        }
+
+        const html = await inventoryResponse.text();
+
+        // Parse the HTML to extract vehicle data from the table
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const table = doc.querySelector('table.table');
+
+        if (!table) {
+            continue;
+        }
+
+        const rows = table.querySelectorAll('tr');
+
+        // Skip the header row (first row)
+        for (let i = 1; i < rows.length; i++) {
+            const cells = rows[i].querySelectorAll('td');
+            if (cells.length === 4) {
+                allVehicles.push({
+                    year: cells[0].textContent.trim(),
+                    make: cells[1].textContent.trim(),
+                    model: cells[2].textContent.trim(),
+                    row: cells[3].textContent.trim()
+                });
+            }
         }
     }
 
-    return vehicles;
+    return allVehicles;
 }
