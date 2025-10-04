@@ -111,39 +111,24 @@ async function searchInventory(make, model, yardIds) {
 }
 
 async function fetchModels(makeName, yardId) {
-    // Using a CORS proxy since we can't make direct requests from GitHub Pages
-    const apiUrl = 'https://inventory.pickapartjalopyjungle.com/Home/GetModels';
+    // Using CORS proxy for GitHub Pages
+    const targetUrl = 'https://inventory.pickapartjalopyjungle.com/Home/GetModels';
+    const formData = `makeName=${encodeURIComponent(makeName)}&yardId=${encodeURIComponent(yardId)}`;
 
-    try {
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `makeName=${encodeURIComponent(makeName)}&yardId=${encodeURIComponent(yardId)}`
-        });
+    // Use corsproxy.io which supports POST requests
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+    const response = await fetch(proxyUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData
+    });
 
-        return await response.json();
-    } catch (error) {
-        // If direct request fails (likely due to CORS), try with a CORS proxy
-        const corsProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
-
-        const response = await fetch(corsProxyUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `makeName=${encodeURIComponent(makeName)}&yardId=${encodeURIComponent(yardId)}`
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to fetch data for yard ${yardId}`);
-        }
-
-        return await response.json();
+    if (!response.ok) {
+        throw new Error(`Failed to fetch data for yard ${yardId}`);
     }
+
+    return await response.json();
 }
