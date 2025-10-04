@@ -111,6 +111,59 @@ body {
     background: #c53030;
 }
 
+.quick-search-section {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 30px 10px 30px;
+}
+
+.quick-search-section h2 {
+    color: #2d3748;
+    margin-bottom: 20px;
+    font-size: 22px;
+}
+
+.preset-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.preset-card {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+    text-align: center;
+}
+
+.preset-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
+    border-color: #667eea;
+}
+
+.preset-card.active {
+    border-color: #667eea;
+    background: #f0f4ff;
+}
+
+.preset-card h3 {
+    color: #667eea;
+    margin-bottom: 8px;
+    font-size: 20px;
+}
+
+.preset-card p {
+    color: #666;
+    font-size: 14px;
+    margin: 0;
+}
+
 .container {
     display: grid;
     grid-template-columns: 1fr 2fr;

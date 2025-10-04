@@ -47,21 +47,17 @@ function showAppScreen() {
 
 // Preset configurations
 const PRESETS = {
+    'bmw_3series': {
+        make: 'BMW',
+        models: ['3 SERIES']
+    },
     'super_duty': {
         make: 'FORD',
         models: ['F250', 'F-250', 'F350', 'F-350', 'EXCURSION']
     },
-    'ford_trucks': {
-        make: 'FORD',
-        models: ['F150', 'F-150', 'F250', 'F-250', 'F350', 'F-350']
-    },
-    'chevy_trucks': {
-        make: 'CHEVROLET',
-        models: ['SILVERADO 1500', 'SILVERADO 2500', 'SILVERADO 3500']
-    },
-    'dodge_trucks': {
-        make: 'DODGE',
-        models: ['RAM 1500', 'RAM 2500', 'RAM 3500']
+    'nissan_350z': {
+        make: 'NISSAN',
+        models: ['350Z']
     }
 };
 
@@ -70,48 +66,43 @@ function normalizeModel(model) {
     return model.toUpperCase().replace(/[\s\-]/g, '');
 }
 
-// Preset dropdown change handler
-document.getElementById('preset').addEventListener('change', async function() {
-    const presetKey = this.value;
+// Preset card click handlers
+document.querySelectorAll('.preset-card').forEach(card => {
+    card.addEventListener('click', async function() {
+        const presetKey = this.getAttribute('data-preset');
+        const preset = PRESETS[presetKey];
 
-    if (!presetKey) {
-        // Enable manual search
-        document.getElementById('make').disabled = false;
-        document.getElementById('model').disabled = false;
-        return;
-    }
+        // Highlight active card
+        document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
 
-    const preset = PRESETS[presetKey];
+        // Get selected yards
+        const selectedYards = Array.from(document.querySelectorAll('.yard-checkbox:checked'))
+            .map(cb => cb.value);
 
-    // Disable manual dropdowns when preset is selected
-    document.getElementById('make').disabled = true;
-    document.getElementById('model').disabled = true;
+        if (selectedYards.length === 0) {
+            alert('Please select at least one yard');
+            return;
+        }
 
-    // Trigger search with preset values
-    const selectedYards = Array.from(document.querySelectorAll('.yard-checkbox:checked'))
-        .map(cb => cb.value);
+        // Show loading
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('results').innerHTML = '';
 
-    if (selectedYards.length === 0) {
-        alert('Please select at least one yard');
-        return;
-    }
+        await searchInventoryPreset(preset.make, preset.models, selectedYards);
 
-    // Show loading
-    document.getElementById('loading').style.display = 'block';
-    document.getElementById('results').innerHTML = '';
-
-    await searchInventoryPreset(preset.make, preset.models, selectedYards);
-
-    // Hide loading
-    document.getElementById('loading').style.display = 'none';
+        // Hide loading
+        document.getElementById('loading').style.display = 'none';
+    });
 });
 
 // Make dropdown change handler - load models for selected make
 document.getElementById('make').addEventListener('change', async function() {
     const make = this.value;
 
-    // Clear preset when user manually selects make
-    document.getElementById('preset').value = '';
+    // Clear active preset card when user manually selects make
+    document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+
     const modelSelect = document.getElementById('model');
 
     // Reset model dropdown
