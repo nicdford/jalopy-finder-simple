@@ -31,18 +31,6 @@
         <!-- Quick Search Cards -->
         <div class="quick-search-section">
             <h2>Quick Search</h2>
-
-            <!-- Year Filter -->
-            <div class="year-filter">
-                <label>Year Range (optional):</label>
-                <div class="year-inputs">
-                    <input type="number" id="year-min" placeholder="Min (e.g., 1999)" min="1900" max="2099">
-                    <span>to</span>
-                    <input type="number" id="year-max" placeholder="Max (e.g., 2007)" min="1900" max="2099">
-                    <button id="clear-years" class="clear-years-btn">Clear</button>
-                </div>
-            </div>
-
             <div class="preset-cards">
                 <div class="preset-card" data-preset="bmw_3series">
                     <h3>BMW 3-Series</h3>
@@ -116,6 +104,16 @@
                     <select class="form-control" id="model" name="VehicleModel">
                         <option value="">Select a make first</option>
                     </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Year Range (optional):</label>
+                    <div class="year-inputs">
+                        <input type="number" id="year-min" placeholder="Min (e.g., 1999)" min="1900" max="2099">
+                        <span>to</span>
+                        <input type="number" id="year-max" placeholder="Max (e.g., 2007)" min="1900" max="2099">
+                    </div>
+                    <button id="clear-years" class="clear-years-btn">Clear Years</button>
                 </div>
 
                 <div class="form-group">
