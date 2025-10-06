@@ -68,6 +68,34 @@ function normalizeModel(model) {
     return model.toUpperCase().replace(/[\s\-]/g, '');
 }
 
+// Filter vehicles by year range
+function filterByYear(vehicles) {
+    const minYear = parseInt(document.getElementById('year-min').value);
+    const maxYear = parseInt(document.getElementById('year-max').value);
+
+    if (!minYear && !maxYear) {
+        return vehicles; // No filter applied
+    }
+
+    return vehicles.filter(v => {
+        const year = parseInt(v.year);
+        if (minYear && maxYear) {
+            return year >= minYear && year <= maxYear;
+        } else if (minYear) {
+            return year >= minYear;
+        } else if (maxYear) {
+            return year <= maxYear;
+        }
+        return true;
+    });
+}
+
+// Clear year filters
+document.getElementById('clear-years').addEventListener('click', () => {
+    document.getElementById('year-min').value = '';
+    document.getElementById('year-max').value = '';
+});
+
 // Preset card click handlers
 document.querySelectorAll('.preset-card').forEach(card => {
     card.addEventListener('click', async function() {
@@ -207,11 +235,14 @@ async function searchInventoryPreset(make, models, yardIds) {
             }
 
             // Remove duplicates based on year, make, model, and row
-            const uniqueVehicles = allVehicles.filter((v, index, self) =>
+            let uniqueVehicles = allVehicles.filter((v, index, self) =>
                 index === self.findIndex((t) => (
                     t.year === v.year && t.make === v.make && t.model === v.model && t.row === v.row
                 ))
             );
+
+            // Apply year filter
+            uniqueVehicles = filterByYear(uniqueVehicles);
 
             const yardName = yardNames[yardId] || `Yard ${yardId}`;
 
@@ -280,7 +311,11 @@ async function searchInventory(make, model, yardIds) {
 
     for (const yardId of yardIds) {
         try {
-            const vehicles = await fetchVehicles(make, model, yardId);
+            let vehicles = await fetchVehicles(make, model, yardId);
+
+            // Apply year filter
+            vehicles = filterByYear(vehicles);
+
             const yardName = yardNames[yardId] || `Yard ${yardId}`;
 
             const resultDiv = document.createElement('div');

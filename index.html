@@ -31,6 +31,18 @@
         <!-- Quick Search Cards -->
         <div class="quick-search-section">
             <h2>Quick Search</h2>
+
+            <!-- Year Filter -->
+            <div class="year-filter">
+                <label>Year Range (optional):</label>
+                <div class="year-inputs">
+                    <input type="number" id="year-min" placeholder="Min (e.g., 1999)" min="1900" max="2099">
+                    <span>to</span>
+                    <input type="number" id="year-max" placeholder="Max (e.g., 2007)" min="1900" max="2099">
+                    <button id="clear-years" class="clear-years-btn">Clear</button>
+                </div>
+            </div>
+
             <div class="preset-cards">
                 <div class="preset-card" data-preset="bmw_3series">
                     <h3>BMW 3-Series</h3>
@@ -113,7 +125,7 @@
                         <label><input type="checkbox" class="yard-checkbox" value="1021" checked> CALDWELL</label>
                         <label><input type="checkbox" class="yard-checkbox" value="1119" checked> GARDEN CITY</label>
                         <label><input type="checkbox" class="yard-checkbox" value="1022" checked> NAMPA</label>
-                        <label><input type="checkbox" class="yard-checkbox" value="1099"> TWIN FALLS</label>
+                        <label><input type="checkbox" class="yard-checkbox" value="1099" checked> TWIN FALLS</label>
                     </div>
                 </div>
 
