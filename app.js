@@ -47,11 +47,22 @@ function showAppScreen() {
     document.getElementById('app-screen').classList.add('active');
 }
 
+// Track active preset for displaying notes
+let activePreset = null;
+
 // Preset configurations
 const PRESETS = {
-    'bmw_3series': {
+    'bmw_e36': {
         make: 'BMW',
-        models: ['3 SERIES']
+        models: ['3 SERIES'],
+        yearRange: { min: 1990, max: 2000 },
+        note: 'E36 generation. Note: 1999-2000 could be E36 or E46'
+    },
+    'bmw_e46': {
+        make: 'BMW',
+        models: ['3 SERIES'],
+        yearRange: { min: 1999, max: 2005 },
+        note: 'E46 generation. Note: 1999-2000 could be E36 or E46'
     },
     'super_duty': {
         make: 'FORD',
@@ -106,6 +117,9 @@ document.querySelectorAll('.preset-card').forEach(card => {
         document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
         this.classList.add('active');
 
+        // Store active preset for displaying notes
+        activePreset = preset;
+
         // Populate advanced search fields
         document.getElementById('make').value = preset.make;
 
@@ -135,6 +149,15 @@ document.querySelectorAll('.preset-card').forEach(card => {
             modelSelect.innerHTML = '<option value="">Error loading models</option>';
         }
 
+        // Set year range if defined in preset
+        if (preset.yearRange) {
+            document.getElementById('year-min').value = preset.yearRange.min;
+            document.getElementById('year-max').value = preset.yearRange.max;
+        } else {
+            document.getElementById('year-min').value = '';
+            document.getElementById('year-max').value = '';
+        }
+
         // Check all yards
         document.querySelectorAll('.yard-checkbox').forEach(cb => cb.checked = true);
 
@@ -147,8 +170,9 @@ document.querySelectorAll('.preset-card').forEach(card => {
 document.getElementById('make').addEventListener('change', async function() {
     const make = this.value;
 
-    // Clear active preset card when user manually selects make
+    // Clear active preset card and note when user manually selects make
     document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+    activePreset = null;
 
     const modelSelect = document.getElementById('model');
 
@@ -306,11 +330,16 @@ async function searchInventoryPreset(make, models, yardIds) {
                 `;
             }
 
+            // Add preset note if applicable
+            const noteHTML = activePreset && activePreset.note ?
+                `<div class="preset-note"><strong>ℹ️ ${activePreset.note}</strong></div>` : '';
+
             resultDiv.innerHTML = `
                 <h3>${yardName}</h3>
                 <span class="status ${uniqueVehicles.length > 0 ? 'available' : 'unavailable'}">
                     ${uniqueVehicles.length > 0 ? `✓ ${uniqueVehicles.length} vehicle(s) found` : '✗ Not Available'}
                 </span>
+                ${noteHTML}
                 ${tableHTML}
             `;
 
@@ -378,11 +407,16 @@ async function searchInventory(make, model, yardIds) {
                 `;
             }
 
+            // Add preset note if applicable
+            const noteHTML = activePreset && activePreset.note ?
+                `<div class="preset-note"><strong>ℹ️ ${activePreset.note}</strong></div>` : '';
+
             resultDiv.innerHTML = `
                 <h3>${yardName}</h3>
                 <span class="status ${vehicles.length > 0 ? 'available' : 'unavailable'}">
                     ${vehicles.length > 0 ? `✓ ${vehicles.length} vehicle(s) found` : '✗ Not Available'}
                 </span>
+                ${noteHTML}
                 ${tableHTML}
             `;
 
