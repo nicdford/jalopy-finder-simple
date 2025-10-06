@@ -249,10 +249,29 @@ body {
     cursor: pointer;
 }
 
+.form-group select.form-control[multiple] {
+    height: auto;
+    padding: 5px;
+}
+
+.form-group select.form-control[multiple] option {
+    padding: 8px;
+    border-radius: 3px;
+    margin: 2px 0;
+}
+
 .form-group select.form-control:disabled {
     background: #f7fafc;
     cursor: not-allowed;
     color: #999;
+}
+
+.form-hint {
+    display: block;
+    color: #666;
+    font-size: 12px;
+    margin-top: 5px;
+    font-style: italic;
 }
 
 .divider {

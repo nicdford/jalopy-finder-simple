@@ -106,20 +106,40 @@ document.querySelectorAll('.preset-card').forEach(card => {
         document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
         this.classList.add('active');
 
-        // Quick search always checks all yards
-        const allYards = ['1020', '1021', '1119', '1022', '1099'];
+        // Populate advanced search fields
+        document.getElementById('make').value = preset.make;
 
-        // Show loading
-        document.getElementById('loading').style.display = 'block';
-        document.getElementById('results').innerHTML = '';
+        // Load and select models for this preset
+        const modelSelect = document.getElementById('model');
+        modelSelect.innerHTML = '<option value="">Loading...</option>';
+        modelSelect.disabled = true;
 
-        // Scroll to results
-        document.querySelector('.results-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        try {
+            const yardId = '1022'; // Use default yard to fetch models
+            const models = await fetchModelsForMake(preset.make, yardId);
 
-        await searchInventoryPreset(preset.make, preset.models, allYards);
+            modelSelect.innerHTML = '<option value="">Select Model</option>';
+            const uniqueModels = [...new Set(models.map(m => m.model))].sort();
+            uniqueModels.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                // Select models that are in the preset
+                if (preset.models.some(pm => normalizeModel(pm) === normalizeModel(model))) {
+                    option.selected = true;
+                }
+                modelSelect.appendChild(option);
+            });
+            modelSelect.disabled = false;
+        } catch (error) {
+            modelSelect.innerHTML = '<option value="">Error loading models</option>';
+        }
 
-        // Hide loading
-        document.getElementById('loading').style.display = 'none';
+        // Check all yards
+        document.querySelectorAll('.yard-checkbox').forEach(cb => cb.checked = true);
+
+        // Trigger search button click
+        document.getElementById('search-btn').click();
     });
 });
 
@@ -189,10 +209,13 @@ async function fetchModelsForMake(make, yardId) {
 // Search functionality
 document.getElementById('search-btn').addEventListener('click', async () => {
     const make = document.getElementById('make').value.trim();
-    const model = document.getElementById('model').value.trim();
+    const modelSelect = document.getElementById('model');
+    const selectedModels = Array.from(modelSelect.selectedOptions)
+        .map(option => option.value)
+        .filter(val => val !== '');
 
-    if (!make || !model) {
-        alert('Please select both make and model');
+    if (!make || selectedModels.length === 0) {
+        alert('Please select both make and at least one model');
         return;
     }
 
@@ -208,7 +231,15 @@ document.getElementById('search-btn').addEventListener('click', async () => {
     document.getElementById('loading').style.display = 'block';
     document.getElementById('results').innerHTML = '';
 
-    await searchInventory(make, model, selectedYards);
+    // Scroll to results
+    document.querySelector('.results-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // If multiple models selected, use preset search logic
+    if (selectedModels.length > 1) {
+        await searchInventoryPreset(make, selectedModels, selectedYards);
+    } else {
+        await searchInventory(make, selectedModels[0], selectedYards);
+    }
 
     // Hide loading
     document.getElementById('loading').style.display = 'none';
