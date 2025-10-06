@@ -50,19 +50,92 @@ function showAppScreen() {
 // Track active preset for displaying notes
 let activePreset = null;
 
+// BMW 3-Series generations in chronological order
+const BMW_3_SERIES_GENERATIONS = [
+    { id: 'e36', name: 'E36', yearRange: { min: 1990, max: 2000 } },
+    { id: 'e46', name: 'E46', yearRange: { min: 1999, max: 2005 } }
+];
+
+// Calculate overlap years between generations
+function getOverlapYears(generation) {
+    const currentIndex = BMW_3_SERIES_GENERATIONS.findIndex(g => g.id === generation.id);
+    if (currentIndex === -1) return null;
+
+    const overlaps = [];
+
+    // Check overlap with predecessor
+    if (currentIndex > 0) {
+        const predecessor = BMW_3_SERIES_GENERATIONS[currentIndex - 1];
+        const overlapMin = Math.max(predecessor.yearRange.min, generation.yearRange.min);
+        const overlapMax = Math.min(predecessor.yearRange.max, generation.yearRange.max);
+
+        if (overlapMin <= overlapMax) {
+            overlaps.push({
+                years: { min: overlapMin, max: overlapMax },
+                otherGeneration: predecessor.name
+            });
+        }
+    }
+
+    // Check overlap with successor
+    if (currentIndex < BMW_3_SERIES_GENERATIONS.length - 1) {
+        const successor = BMW_3_SERIES_GENERATIONS[currentIndex + 1];
+        const overlapMin = Math.max(generation.yearRange.min, successor.yearRange.min);
+        const overlapMax = Math.min(generation.yearRange.max, successor.yearRange.max);
+
+        if (overlapMin <= overlapMax) {
+            overlaps.push({
+                years: { min: overlapMin, max: overlapMax },
+                otherGeneration: successor.name
+            });
+        }
+    }
+
+    return overlaps.length > 0 ? overlaps : null;
+}
+
+// Generate note for a generation based on its overlaps
+function generateOverlapNote(generationId, vehicles) {
+    const generation = BMW_3_SERIES_GENERATIONS.find(g => g.id === generationId);
+    if (!generation) return null;
+
+    const overlaps = getOverlapYears(generation);
+    if (!overlaps) return null;
+
+    // Check if any vehicles fall within overlap years
+    const vehiclesInOverlap = vehicles.filter(v => {
+        const year = parseInt(v.year);
+        return overlaps.some(overlap =>
+            year >= overlap.years.min && year <= overlap.years.max
+        );
+    });
+
+    if (vehiclesInOverlap.length === 0) return null;
+
+    // Build note text
+    const overlapTexts = overlaps.map(overlap => {
+        const yearText = overlap.years.min === overlap.years.max
+            ? `${overlap.years.min}`
+            : `${overlap.years.min}-${overlap.years.max}`;
+        return `${yearText} could be ${generation.name} or ${overlap.otherGeneration}`;
+    });
+
+    return `${generation.name} generation. Note: ${overlapTexts.join('; ')}`;
+}
+
 // Preset configurations
 const PRESETS = {
     'bmw_e36': {
         make: 'BMW',
         models: ['3 SERIES'],
         yearRange: { min: 1990, max: 2000 },
-        note: 'E36 generation. Note: 1999-2000 could be E36 or E46'
+        generationId: 'e36'
     },
     'bmw_e46': {
         make: 'BMW',
         models: ['3 SERIES'],
         yearRange: { min: 1999, max: 2005 },
-        note: 'E46 generation. Note: 1999-2000 could be E36 or E46'
+        generationId: 'e46'
     },
     'super_duty': {
         make: 'FORD',
@@ -330,9 +403,14 @@ async function searchInventoryPreset(make, models, yardIds) {
                 `;
             }
 
-            // Add preset note if applicable
-            const noteHTML = activePreset && activePreset.note ?
-                `<div class="preset-note"><strong>ℹ️ ${activePreset.note}</strong></div>` : '';
+            // Generate note based on actual vehicle years in overlap range
+            let noteHTML = '';
+            if (activePreset && activePreset.generationId && uniqueVehicles.length > 0) {
+                const note = generateOverlapNote(activePreset.generationId, uniqueVehicles);
+                if (note) {
+                    noteHTML = `<div class="preset-note"><strong>ℹ️ ${note}</strong></div>`;
+                }
+            }
 
             resultDiv.innerHTML = `
                 <h3>${yardName}</h3>
@@ -407,9 +485,14 @@ async function searchInventory(make, model, yardIds) {
                 `;
             }
 
-            // Add preset note if applicable
-            const noteHTML = activePreset && activePreset.note ?
-                `<div class="preset-note"><strong>ℹ️ ${activePreset.note}</strong></div>` : '';
+            // Generate note based on actual vehicle years in overlap range
+            let noteHTML = '';
+            if (activePreset && activePreset.generationId && vehicles.length > 0) {
+                const note = generateOverlapNote(activePreset.generationId, vehicles);
+                if (note) {
+                    noteHTML = `<div class="preset-note"><strong>ℹ️ ${note}</strong></div>`;
+                }
+            }
 
             resultDiv.innerHTML = `
                 <h3>${yardName}</h3>
