@@ -137,9 +137,11 @@ const PRESETS = {
         yearRange: { min: 1999, max: 2005 },
         generationId: 'e46'
     },
-    'super_duty': {
+    'first_gen_super_duty': {
         make: 'FORD',
-        models: ['F250', 'F-250', 'F350', 'F-350', 'EXCURSION']
+        models: ['F250', 'F-250', 'F350', 'F-350', 'EXCURSION'],
+        yearRange: { min: 1999, max: 2007 },
+        generationId: 'first_gen_super_duty'
     },
     'nissan_350z': {
         make: 'NISSAN',
@@ -202,11 +204,22 @@ document.querySelectorAll('.preset-card').forEach(card => {
         modelSelect.disabled = true;
 
         try {
-            const yardId = '1022'; // Use default yard to fetch models
-            const models = await fetchModelsForMake(preset.make, yardId);
+            // Get models from all yards
+            const yardIds = ['1020', '1021', '1119', '1022', '1099'];
+            let allModels = [];
+
+            for (const yardId of yardIds) {
+                try {
+                    const models = await fetchModelsForMake(preset.make, yardId);
+                    allModels = allModels.concat(models);
+                } catch (error) {
+                    console.error(`Error loading models from yard ${yardId}:`, error);
+                    // Continue with other yards even if one fails
+                }
+            }
 
             modelSelect.innerHTML = '<option value="">Select Model</option>';
-            const uniqueModels = [...new Set(models.map(m => m.model))].sort();
+            const uniqueModels = [...new Set(allModels.map(m => m.model))].sort();
             uniqueModels.forEach(model => {
                 const option = document.createElement('option');
                 option.value = model;
@@ -259,14 +272,24 @@ document.getElementById('make').addEventListener('change', async function() {
     }
 
     try {
-        // Get models from any yard (using first available yard)
-        const yardId = '1022'; // Default to NAMPA
-        const models = await fetchModelsForMake(make, yardId);
+        // Get models from all yards
+        const yardIds = ['1020', '1021', '1119', '1022', '1099'];
+        let allModels = [];
+
+        for (const yardId of yardIds) {
+            try {
+                const models = await fetchModelsForMake(make, yardId);
+                allModels = allModels.concat(models);
+            } catch (error) {
+                console.error(`Error loading models from yard ${yardId}:`, error);
+                // Continue with other yards even if one fails
+            }
+        }
 
         modelSelect.innerHTML = '<option value="">Select Model</option>';
 
         // Get unique models across all yards
-        const uniqueModels = [...new Set(models.map(m => m.model))].sort();
+        const uniqueModels = [...new Set(allModels.map(m => m.model))].sort();
 
         uniqueModels.forEach(model => {
             const option = document.createElement('option');
