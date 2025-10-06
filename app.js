@@ -58,7 +58,8 @@ const BMW_3_SERIES_GENERATIONS = [
 
 // Nissan S-Chassis generations in chronological order
 const NISSAN_S_CHASSIS_GENERATIONS = [
-    { id: 's13', name: 'S13', yearRange: { min: 1989, max: 1994 } }
+    { id: 's13', name: 'S13', yearRange: { min: 1989, max: 1994 } },
+    { id: 's14', name: 'S14', yearRange: { min: 1993, max: 1998 } }
 ];
 
 // Calculate overlap years between generations
@@ -159,6 +160,13 @@ const PRESETS = {
         models: ['240SX', '200SX'],
         yearRange: { min: 1989, max: 1994 },
         generationId: 's13',
+        generationType: 'nissan_schassis'
+    },
+    'nissan_s14': {
+        make: 'NISSAN',
+        models: ['240SX', '200SX'],
+        yearRange: { min: 1993, max: 1998 },
+        generationId: 's14',
         generationType: 'nissan_schassis'
     },
     'first_gen_super_duty': {
