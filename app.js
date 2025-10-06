@@ -56,16 +56,21 @@ const BMW_3_SERIES_GENERATIONS = [
     { id: 'e46', name: 'E46', yearRange: { min: 1999, max: 2005 } }
 ];
 
+// Nissan S-Chassis generations in chronological order
+const NISSAN_S_CHASSIS_GENERATIONS = [
+    { id: 's13', name: 'S13', yearRange: { min: 1989, max: 1994 } }
+];
+
 // Calculate overlap years between generations
-function getOverlapYears(generation) {
-    const currentIndex = BMW_3_SERIES_GENERATIONS.findIndex(g => g.id === generation.id);
+function getOverlapYears(generation, generationsList) {
+    const currentIndex = generationsList.findIndex(g => g.id === generation.id);
     if (currentIndex === -1) return null;
 
     const overlaps = [];
 
     // Check overlap with predecessor
     if (currentIndex > 0) {
-        const predecessor = BMW_3_SERIES_GENERATIONS[currentIndex - 1];
+        const predecessor = generationsList[currentIndex - 1];
         const overlapMin = Math.max(predecessor.yearRange.min, generation.yearRange.min);
         const overlapMax = Math.min(predecessor.yearRange.max, generation.yearRange.max);
 
@@ -78,8 +83,8 @@ function getOverlapYears(generation) {
     }
 
     // Check overlap with successor
-    if (currentIndex < BMW_3_SERIES_GENERATIONS.length - 1) {
-        const successor = BMW_3_SERIES_GENERATIONS[currentIndex + 1];
+    if (currentIndex < generationsList.length - 1) {
+        const successor = generationsList[currentIndex + 1];
         const overlapMin = Math.max(generation.yearRange.min, successor.yearRange.min);
         const overlapMax = Math.min(generation.yearRange.max, successor.yearRange.max);
 
@@ -95,11 +100,21 @@ function getOverlapYears(generation) {
 }
 
 // Generate note for a generation based on its overlaps
-function generateOverlapNote(generationId, vehicles) {
-    const generation = BMW_3_SERIES_GENERATIONS.find(g => g.id === generationId);
+function generateOverlapNote(generationId, vehicles, generationType) {
+    // Determine which generations list to use
+    let generationsList;
+    if (generationType === 'bmw_3series') {
+        generationsList = BMW_3_SERIES_GENERATIONS;
+    } else if (generationType === 'nissan_schassis') {
+        generationsList = NISSAN_S_CHASSIS_GENERATIONS;
+    } else {
+        return null;
+    }
+
+    const generation = generationsList.find(g => g.id === generationId);
     if (!generation) return null;
 
-    const overlaps = getOverlapYears(generation);
+    const overlaps = getOverlapYears(generation, generationsList);
     if (!overlaps) return null;
 
     // Check if any vehicles fall within overlap years
@@ -129,13 +144,22 @@ const PRESETS = {
         make: 'BMW',
         models: ['3 SERIES'],
         yearRange: { min: 1990, max: 2000 },
-        generationId: 'e36'
+        generationId: 'e36',
+        generationType: 'bmw_3series'
     },
     'bmw_e46': {
         make: 'BMW',
         models: ['3 SERIES'],
         yearRange: { min: 1999, max: 2005 },
-        generationId: 'e46'
+        generationId: 'e46',
+        generationType: 'bmw_3series'
+    },
+    'nissan_s13': {
+        make: 'NISSAN',
+        models: ['240SX', '200SX'],
+        yearRange: { min: 1989, max: 1994 },
+        generationId: 's13',
+        generationType: 'nissan_schassis'
     },
     'first_gen_super_duty': {
         make: 'FORD',
@@ -428,8 +452,8 @@ async function searchInventoryPreset(make, models, yardIds) {
 
             // Generate note based on actual vehicle years in overlap range
             let noteHTML = '';
-            if (activePreset && activePreset.generationId && uniqueVehicles.length > 0) {
-                const note = generateOverlapNote(activePreset.generationId, uniqueVehicles);
+            if (activePreset && activePreset.generationId && activePreset.generationType && uniqueVehicles.length > 0) {
+                const note = generateOverlapNote(activePreset.generationId, uniqueVehicles, activePreset.generationType);
                 if (note) {
                     noteHTML = `<div class="preset-note"><strong>ℹ️ ${note}</strong></div>`;
                 }
@@ -510,8 +534,8 @@ async function searchInventory(make, model, yardIds) {
 
             // Generate note based on actual vehicle years in overlap range
             let noteHTML = '';
-            if (activePreset && activePreset.generationId && vehicles.length > 0) {
-                const note = generateOverlapNote(activePreset.generationId, vehicles);
+            if (activePreset && activePreset.generationId && activePreset.generationType && vehicles.length > 0) {
+                const note = generateOverlapNote(activePreset.generationId, vehicles, activePreset.generationType);
                 if (note) {
                     noteHTML = `<div class="preset-note"><strong>ℹ️ ${note}</strong></div>`;
                 }
