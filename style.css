@@ -19,14 +19,14 @@ body {
     display: flex;
 }
 
-/* Login Screen */
-#login-screen {
+/* Verification Screen */
+#verification-screen {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
 }
 
-.login-container {
+.verification-container {
     background: white;
     padding: 40px;
     border-radius: 10px;
@@ -35,46 +35,27 @@ body {
     min-width: 320px;
 }
 
-.login-container h1 {
+.verification-container h1 {
     color: #667eea;
     margin-bottom: 10px;
+    font-size: 32px;
 }
 
-.login-container p {
+.verification-container p {
     color: #666;
-    margin-bottom: 30px;
-}
-
-#login-form input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 14px;
-}
-
-#login-form button {
-    width: 100%;
-    padding: 12px;
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 5px;
+    margin-bottom: 10px;
     font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s;
 }
 
-#login-form button:hover {
-    background: #5568d3;
+.verification-message {
+    color: #555;
+    font-weight: 500;
+    margin-bottom: 25px;
 }
 
-.error-message {
-    color: #e53e3e;
-    margin-top: 10px;
-    font-size: 14px;
+.g-recaptcha {
+    display: inline-block;
+    margin: 0 auto;
 }
 
 /* App Screen */
@@ -94,21 +75,6 @@ body {
 .header h1 {
     color: #667eea;
     font-size: 24px;
-}
-
-.logout-btn {
-    padding: 8px 20px;
-    background: #e53e3e;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background 0.3s;
-}
-
-.logout-btn:hover {
-    background: #c53030;
 }
 
 .quick-search-section {

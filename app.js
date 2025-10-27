@@ -1,49 +1,25 @@
-// Authentication
-const VALID_USERS = {
-    'nicdford': 'redwed4',
-    'apexidaho': 'keepcarsclean'
+// reCAPTCHA verification
+window.addEventListener('DOMContentLoaded', () => {
+    const isVerified = sessionStorage.getItem('recaptchaVerified');
+    if (isVerified === 'true') {
+        showAppScreen();
+    }
+});
+
+// reCAPTCHA callback when user completes the challenge
+window.onRecaptchaSuccess = function(token) {
+    // Store verification status
+    sessionStorage.setItem('recaptchaVerified', 'true');
+    showAppScreen();
 };
 
-// Check if already logged in
-window.addEventListener('DOMContentLoaded', () => {
-    const isLoggedIn = sessionStorage.getItem('isLoggedIn');
-    if (isLoggedIn === 'true') {
-        showAppScreen();
-    }
-});
-
-// Login form handler
-document.getElementById('login-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const username = document.getElementById('username').value.toLowerCase();
-    const password = document.getElementById('password').value;
-    const errorElement = document.getElementById('login-error');
-
-    if (VALID_USERS[username] && VALID_USERS[username] === password) {
-        sessionStorage.setItem('isLoggedIn', 'true');
-        showAppScreen();
-        errorElement.textContent = '';
-    } else {
-        errorElement.textContent = 'Invalid username or password';
-    }
-});
-
-// Logout handler
-document.getElementById('logout-btn').addEventListener('click', () => {
-    sessionStorage.removeItem('isLoggedIn');
-    showLoginScreen();
-});
-
-function showLoginScreen() {
-    document.getElementById('login-screen').classList.add('active');
+function showVerificationScreen() {
+    document.getElementById('verification-screen').classList.add('active');
     document.getElementById('app-screen').classList.remove('active');
-    document.getElementById('username').value = '';
-    document.getElementById('password').value = '';
 }
 
 function showAppScreen() {
-    document.getElementById('login-screen').classList.remove('active');
+    document.getElementById('verification-screen').classList.remove('active');
     document.getElementById('app-screen').classList.add('active');
 }
 
